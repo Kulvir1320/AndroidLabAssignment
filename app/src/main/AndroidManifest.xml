@@ -12,6 +12,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".FavLocationActivity"></activity>
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,11 +24,9 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyB45lwuNXNnXYsc3WHA1QyJKIkxqE-Rb7A" />
+            android:value="@string/api_key" />
 
-        <activity android:name=".AddLocationActivity">
-
-        </activity>
+        <activity android:name=".AddLocationActivity"></activity>
     </application>
 
 </manifest>

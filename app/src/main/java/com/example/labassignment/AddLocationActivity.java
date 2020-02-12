@@ -46,8 +46,10 @@ public class AddLocationActivity extends AppCompatActivity implements OnMapReady
     GoogleMap mMap;
     Marker fvt;
     String place_name;
+    FavModel model;
 
     private final int REQUEST_CODE = 1;
+    public static final String TAG = "MAPACTIVITY";
 
     // get user location
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -165,10 +167,8 @@ public class AddLocationActivity extends AppCompatActivity implements OnMapReady
                 dest_lat = latLng.latitude;
                 dest_long = latLng.longitude;
 
-//                setMarker(location);
 
-
-                MarkerOptions options = new MarkerOptions().position(latLng).title("your destination ").snippet("you are going here").draggable(true)
+                MarkerOptions options = new MarkerOptions().position(latLng).title("your Favorite").snippet("you are going here").draggable(true)
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 //                Log.i("tag", "setMarker: added " + userLatLng.latitude + "..." +userLatLng.longitude);
 
@@ -185,20 +185,33 @@ public class AddLocationActivity extends AppCompatActivity implements OnMapReady
 
 
 
-                try {
-                    List<Address> addresses = geocoder.getFromLocation(fvt.getPosition().latitude, fvt.getPosition().longitude,1);
-
-
-
-                    Address a = addresses.get(0);
-
-                    place_name = a.getAddressLine(0);
-                    Log.i("tag", "onMapLongClick: "+ place_name);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
+//                try {
+//
+//
+//                    Log.i(TAG, "onMapLongClick: " + fvt.getPosition().latitude);
+//                    Log.i(TAG, "onMapLongClick: " + fvt.getPosition().longitude);
+//
+//
+//
+//                    List<Address> addresses = geocoder.getFromLocation(fvt.getPosition().latitude, fvt.getPosition().longitude,1);
+//
+//
+//                    Address a = addresses.get(0);
+//
+//                    place_name = a.getAddressLine(0);
+//                    Log.i("DEBUG", "onMapLongClick: " + place_name);
+//                    System.out.println(place_name);
+//                    model = new FavModel(fvt.getPosition().latitude, fvt.getPosition().longitude, place_name);
+//
+//
+//
+//                } catch (IOException e) {
+//
+//
+//                    Log.i("DEBUG", "there is some problem: ");
+//                    e.printStackTrace();
+//                }
+//
             }
         });
 
@@ -209,8 +222,10 @@ public class AddLocationActivity extends AppCompatActivity implements OnMapReady
 
     public void addToFvt(View view) {
 
+        model = new FavModel(fvt.getPosition().latitude, fvt.getPosition().longitude,"Address");
 
-        MainActivity.fvtLocations.add(place_name);
+        FavModel.FavLoc.add(model);
+        Toast.makeText(this, "Added to fvt", Toast.LENGTH_SHORT).show();
 
     }
 }
