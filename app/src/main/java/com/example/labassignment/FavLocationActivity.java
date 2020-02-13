@@ -144,15 +144,42 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
 
+                Log.i("tag", "onMapLongClick: " + latLng.latitude + "..." + latLng.longitude);
 
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                Location location = new Location("your destination");
+                location.setLongitude(latLng.latitude);
+                location.setLongitude(latLng.longitude);
+
+            Double    dest_lat = latLng.latitude;
+              Double  dest_long = latLng.longitude;
+
+                       dirc_lat = dest_lat;
+                       direc_long = dest_long;
+
+                MarkerOptions options = new MarkerOptions().position(latLng).title("your Favorite").snippet("you are going here").draggable(true)
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+//                Log.i("tag", "setMarker: added " + userLatLng.latitude + "..." +userLatLng.longitude);
+
+                mMap.addMarker(options);
+            }
+        });
+
+                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
 
 
              fav_lat =  marker.getPosition().latitude;
              fav_long = marker.getPosition().longitude;
+
+
+                dirc_lat = fav_lat;
+                direc_long = fav_long;
+
 
 
 
@@ -190,6 +217,8 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
 
 
     }
+
+
     public void addToFvt(View view) {
 
 
@@ -236,7 +265,9 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
                 getNearbyPlaceData2.execute(dataTransfer);
                 Toast.makeText(this, "Schools", Toast.LENGTH_SHORT).show();
                 break;
+
             case R.id.go_btn:
+
             case R.id.btn_directions:
                 dataTransfer = new Object[3];
                 url = getDirectionUrl();
@@ -271,6 +302,7 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
         Log.d("", "getDirectionUrl: "+googleDirectionUrl);
         return googleDirectionUrl.toString();
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -301,6 +333,8 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
                 mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
                 Toast.makeText(this, "hybrid map is selected", Toast.LENGTH_SHORT).show();
                 return true;
+            case R.id.clear:
+                mMap.clear();
             default:
                 return super.onOptionsItemSelected(item);
 

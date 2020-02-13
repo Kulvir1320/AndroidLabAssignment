@@ -50,6 +50,19 @@
             android:text="distance"
             android:onClick="btnClick"
             android:textColor="#fff" />
+
+
+    </LinearLayout>
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
         <Button
             android:id="@+id/btn_directions"
             android:layout_width="0dp"
@@ -60,33 +73,20 @@
             android:text="directions"
             android:onClick="btnClick"
             android:textColor="#fff" />
+
         <Button
-            android:id="@+id/clear"
+            android:id="@+id/btn_fav"
             android:layout_width="0dp"
-            android:layout_weight="2"
-            android:background="#065"
-            android:textColor="#fff"
             android:layout_height="wrap_content"
-            android:onClick="btnClick"
-            android:text="clear"/>
-
+            android:layout_weight="1"
+            android:background="#065"
+            android:text="Add to Faviourite"
+            android:onClick="addToFvt"
+            android:textColor="#fff" />
     </LinearLayout>
-    <fragment
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
 
 
-    <Button
-        android:id="@+id/btn_fav"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#065"
-        android:text="Add to Faviourite"
-        android:onClick="addToFvt"
-        android:textColor="#fff" />
+
 
 
 </LinearLayout>

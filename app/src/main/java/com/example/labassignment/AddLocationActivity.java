@@ -221,12 +221,16 @@ public class AddLocationActivity extends AppCompatActivity implements OnMapReady
 
 
     public void addToFvt(View view) {
+        if ( fvt == null){
+            Toast.makeText(this, "Select location", Toast.LENGTH_SHORT).show();
 
-        model = new FavModel(fvt.getPosition().latitude, fvt.getPosition().longitude,"Address");
+        } else {
 
-        FavModel.FavLoc.add(model);
-        Toast.makeText(this, "Added to fvt", Toast.LENGTH_SHORT).show();
+            model = new FavModel(fvt.getPosition().latitude, fvt.getPosition().longitude, "Address");
 
+            FavModel.FavLoc.add(model);
+            Toast.makeText(this, "Added to fvt", Toast.LENGTH_SHORT).show();
+        }
     }
 }
 
