@@ -13,14 +13,29 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
-
-    <Button
-        android:id="@+id/btn_direction"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#065"
-        android:text="Add to Faviourite"
-        android:onClick="addToFvt"
-        android:textColor="#fff" />
+        android:orientation="horizontal">
 
+
+        <Button
+            android:id="@+id/btn_fav"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="#065"
+            android:text="Add to Faviourite"
+            android:onClick="addToFvt"
+            android:textColor="#fff" />
+        <CheckBox
+            android:layout_width="0dp"
+            android:id="@+id/checkbox_visited"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="isVisited"
+            android:background="#065"
+            android:textSize="15dp"/>
+
+    </LinearLayout>
 </LinearLayout>

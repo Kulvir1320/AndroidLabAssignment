@@ -16,12 +16,14 @@
         android:id="@+id/btn_add"
         android:background="#065"
         android:textSize="20dp"/>
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+
+    <com.baoyz.swipemenulistview.SwipeMenuListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_marginTop="20dp"
         android:id="@+id/listview"
         android:background="#D3D3D3"
+        android:layout_weight="1"
         android:textAlignment="center"/>
 
 

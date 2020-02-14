@@ -5,8 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -17,6 +20,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -36,12 +41,19 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-public class FavLocationActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class FavLocationActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMarkerDragListener {
 
     GoogleMap mMap;
+    public int i;
+    private static String visited =  "notvisited";
+
+
 
 
     private final int REQUEST_CODE = 1;
@@ -50,6 +62,8 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
     private FusedLocationProviderClient fusedLocationProviderClient;
     LocationCallback locationCallback;
     LocationRequest locationRequest;
+    ArrayList<FavModel> arrayList;
+
 
 
     // latitude, longitude
@@ -62,12 +76,41 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
     FavModel model;
     public static boolean directionRequested;
 
-    public static boolean direction_requested;
+    DatabaseHelper mDatabase;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fav_location);
+
+    CheckBox checkBox = findViewById(R.id.checkbox_visited);
+
+    checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+            visited =  "Visited";
+
+            Double  dest_lat = FavModel.FavLoc.get(i).getLatitude();
+            Double  dest_long = FavModel.FavLoc.get(i).getLongitude();
+            Location location = new Location("");
+            location.setLatitude(dest_lat);
+            location.setLongitude(dest_long);
+
+            Calendar calendar = Calendar.getInstance();
+            SimpleDateFormat dformat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+            String sdate = dformat.format(calendar.getTime());
+            FavModel loc = new FavModel(dest_lat,dest_long,place_name,sdate,visited,1);
+            FavModel.FavLoc.remove(i);
+            FavModel.FavLoc.add(i,loc);
+
+
+         visited = "NotVisited";
+
+        }
+    });
 
         geocoder = new Geocoder(this, Locale.getDefault());
         initMap();
@@ -114,7 +157,7 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
                     mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
                     mMap.addMarker(new MarkerOptions().position(userLocation)
                             .title("your location")
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                 }
             }
 
@@ -144,6 +187,7 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        mMap.setOnMarkerDragListener((this));
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng latLng) {
@@ -154,7 +198,7 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
                 location.setLongitude(latLng.latitude);
                 location.setLongitude(latLng.longitude);
 
-            Double    dest_lat = latLng.latitude;
+            Double  dest_lat = latLng.latitude;
               Double  dest_long = latLng.longitude;
 
                        dirc_lat = dest_lat;
@@ -170,36 +214,70 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
 
                 mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
-            public boolean onMarkerClick(Marker marker) {
-
-
-             fav_lat =  marker.getPosition().latitude;
-             fav_long = marker.getPosition().longitude;
-
-
-                dirc_lat = fav_lat;
-                direc_long = fav_long;
+            public boolean onMarkerClick(final Marker marker) {
 
 
 
+                AlertDialog.Builder builder = new AlertDialog.Builder(FavLocationActivity.this);
+                builder.setTitle("Are you sure");
+                builder.setPositiveButton("set as favoutite destination", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
 
-//                try {
-//                    List<Address> addresses = geocoder.getFromLocation(fav_lat,fav_long,1);
-//
-//                    Address a = addresses.get(0);
-//                    place_name = a.getAddressLine(0);
-//                    model = new FavModel(fav_lat,fav_long,place_name);
-//
-//                }catch (IOException e) {
-//                    e.printStackTrace();
-//                }
+                        fav_lat =  marker.getPosition().latitude;
+                        fav_long = marker.getPosition().longitude;
+
+
+                        dirc_lat = fav_lat;
+                        direc_long = fav_long;
+
+                    }
+                });
+
+                builder.setNegativeButton("set as source", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                       latitude = marker.getPosition().latitude;
+                       longitude = marker.getPosition().longitude;
+
+                    }
+                });
+
+
+
+                builder.create().show();
+                try {
+
+                    List<Address> addresses = geocoder.getFromLocation(fav_lat,fav_long,1);
+if(addresses != null && addresses.size() >0) {
+    if (addresses.get(0).getSubThoroughfare() != null) {
+        place_name += addresses.get(0).getSubThoroughfare() + "";
+    }
+    if (addresses.get(0).getThoroughfare() != null) {
+        place_name += addresses.get(0).getThoroughfare() + "";
+    }
+    if (addresses.get(0).getLocality() != null) {
+        place_name += addresses.get(0).getLocality() + "";
+    }
+    model = new FavModel(fav_lat,fav_long,place_name);
+}
+
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 return false;
             }
         });
 
         Intent intent = getIntent();
-        final int i = intent.getExtras().getInt("id");
+        i = intent.getExtras().getInt("id");
         System.out.println("intent passesd");
+
+        System.out.println(i);
+        System.out.println(FavModel.FavLoc.size());
+
         dirc_lat = FavModel.FavLoc.get(i).getLatitude();
         direc_long = FavModel.FavLoc.get(i).getLongitude();
 
@@ -212,19 +290,23 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
 
         mMap.addMarker(options);
 
-//
-//      mMap.setOnMarkerDragListener((GoogleMap.OnMarkerDragListener) this);
-
 
     }
 
 
     public void addToFvt(View view) {
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dformat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+        String sdate = dformat.format(calendar.getTime());
 
 
-        model = new FavModel(fav_lat, fav_long,"Address");
+        model = new FavModel(fav_lat, fav_long,"Address",sdate,visited,1);
 
-
+//        if (mDatabase.addlocation(fav_lat, fav_long, place_name, sdate,  "Not visited")) {
+//            Toast.makeText(this, "add", Toast.LENGTH_SHORT).show();
+//        } else {
+//            Toast.makeText(this, "Employee not added", Toast.LENGTH_SHORT).show();
+//        }
 
 
         FavModel.FavLoc.add(model);
@@ -267,7 +349,6 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
                 break;
 
             case R.id.go_btn:
-
             case R.id.btn_directions:
                 dataTransfer = new Object[3];
                 url = getDirectionUrl();
@@ -342,4 +423,77 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
 
 
     }
+
+    @Override
+    public void onMarkerDragStart(Marker marker) {
+
     }
+
+    @Override
+    public void onMarkerDrag(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker) {
+        Double  dest_lat = marker.getPosition().latitude;
+        Double  dest_long = marker.getPosition().longitude;
+        Location location = new Location("");
+        location.setLatitude(dest_lat);
+        location.setLongitude(dest_long);
+
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dformat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+        String sdate = dformat.format(calendar.getTime());
+        try {
+
+            List<Address> addresses = geocoder.getFromLocation(fav_lat,fav_long,1);
+            if(addresses != null && addresses.size() >0) {
+                if (addresses.get(0).getSubThoroughfare() != null) {
+                    place_name += addresses.get(0).getSubThoroughfare() + "";
+                }
+                if (addresses.get(0).getThoroughfare() != null) {
+                    place_name += addresses.get(0).getThoroughfare() + "";
+                }
+                if (addresses.get(0).getLocality() != null) {
+                    place_name += addresses.get(0).getLocality() + "";
+                }
+                model = new FavModel(fav_lat,fav_long,place_name,sdate,visited,1);
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//        if(mDatabase.updateEmployee(employee.getId(),name,dept,Double.parseDouble(salary))){
+//            Toast.makeText(mContext, "employee update", Toast.LENGTH_SHORT).show();
+//            loadEmployee();
+//        }
+//        else {
+//            Toast.makeText(mContext, "employee update", Toast.LENGTH_SHORT).show();
+//        }
+
+//        if(mDatabase.updateLoaction(FavModel.FavLoc.get(i).getId(),dest_lat,dest_long,place_name,sdate,visited)){
+//            Toast.makeText(FavLocationActivity.this, "employee update", Toast.LENGTH_SHORT).show();
+//            loadEmployee();
+//        }
+        FavModel loc = new FavModel(dest_lat,dest_long,place_name,sdate,visited,1);
+        FavModel.FavLoc.remove(i);
+        FavModel.FavLoc.add(i,loc);
+
+    }
+
+//    private  void loadEmployee() {
+//        Cursor cursor = mDatabase.getAllLocation();
+//        if(cursor.moveToFirst()) {
+//            FavModel.FavLoc.clear();
+//        }
+//            do{
+//                FavModel.FavLoc.add(new FavModel(cursor.getDouble(0),cursor.getDouble(1),cursor.getString(2),cursor.getString(3),
+//                        cursor.getString(4),cursor.getInt(5)));
+//
+//            } while(cursor.moveToNext());
+//            cursor.close();
+//    }
+
+}

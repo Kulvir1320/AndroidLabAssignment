@@ -19,6 +19,8 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -38,8 +40,11 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+
 
 public class AddLocationActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -47,6 +52,9 @@ public class AddLocationActivity extends AppCompatActivity implements OnMapReady
     Marker fvt;
     String place_name;
     FavModel model;
+   public String isVisited = "visited";
+    DatabaseHelper mDatabase;
+
 
     private final int REQUEST_CODE = 1;
     public static final String TAG = "MAPACTIVITY";
@@ -68,7 +76,28 @@ public class AddLocationActivity extends AppCompatActivity implements OnMapReady
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        CheckBox checkBox = findViewById(R.id.checkbox_visited);
 
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+
+//                    Double  dest_lat = FavModel.FavLoc.get(i).getLatitude();
+//                Double  dest_long = FavModel.FavLoc.get(i).getLongitude();
+//                Location location = new Location("");
+//                location.setLatitude(dest_lat);
+//                location.setLongitude(dest_long);
+//
+//                Calendar calendar = Calendar.getInstance();
+//                SimpleDateFormat dformat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+//                String sdate = dformat.format(calendar.getTime());
+//                FavModel loc = new FavModel(dest_lat,dest_long,place_name,sdate,isVisited);
+//                FavModel.FavLoc.remove(i);
+//                FavModel.FavLoc.add(i,loc);
+            }
+        });
+        mDatabase = new DatabaseHelper(this);
         geocoder = new Geocoder(this, Locale.getDefault());
         initMap();
         getUserLocation();
@@ -114,8 +143,8 @@ public class AddLocationActivity extends AppCompatActivity implements OnMapReady
                             .build();
                     mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
                     mMap.addMarker(new MarkerOptions().position(userLocation)
-                            .title("your location")
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+                            .title("your location").draggable(true)
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                 }
             }
 
@@ -168,69 +197,91 @@ public class AddLocationActivity extends AppCompatActivity implements OnMapReady
                 dest_long = latLng.longitude;
 
 
-                MarkerOptions options = new MarkerOptions().position(latLng).title("your Favorite").snippet("you are going here").draggable(true)
+                MarkerOptions options = new MarkerOptions().position(latLng).title("your Favorite").snippet("you are going here")
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 //                Log.i("tag", "setMarker: added " + userLatLng.latitude + "..." +userLatLng.longitude);
 
-              if (fvt != null){
+                if (fvt != null) {
 
-                  fvt.remove();
+                    fvt.remove();
 
-              }
+                }
 
-              fvt = mMap.addMarker(options);
-
-
+                fvt = mMap.addMarker(options);
 
 
+                try {
 
 
-//                try {
+                    Log.i(TAG, "onMapLongClick: " + fvt.getPosition().latitude);
+                    Log.i(TAG, "onMapLongClick: " + fvt.getPosition().longitude);
+
+
+                    List<Address> addresses = geocoder.getFromLocation(fvt.getPosition().latitude, fvt.getPosition().longitude, 1);
+
+                    System.out.println("try is working");
+                    place_name = addresses.get(0).getAddressLine(0);
+                    System.out.println(addresses.get(0).getAddressLine(0));
+//                    if(addresses != null && addresses.size() >0) {
+//                        if (addresses.get(0).getSubThoroughfare() != null) {
+//                            place_name += addresses.get(0).getSubThoroughfare() + "";
+//                        }
+//                        if (addresses.get(0).getThoroughfare() != null) {
+//                            place_name += addresses.get(0).getThoroughfare() + "";
+//                        }
+//                        if (addresses.get(0).getLocality() != null) {
+//                            place_name += addresses.get(0).getLocality() + "";
+//                        }
 //
 //
-//                    Log.i(TAG, "onMapLongClick: " + fvt.getPosition().latitude);
-//                    Log.i(TAG, "onMapLongClick: " + fvt.getPosition().longitude);
 //
 //
 //
-//                    List<Address> addresses = geocoder.getFromLocation(fvt.getPosition().latitude, fvt.getPosition().longitude,1);
-//
-//
-//                    Address a = addresses.get(0);
-//
-//                    place_name = a.getAddressLine(0);
-//                    Log.i("DEBUG", "onMapLongClick: " + place_name);
-//                    System.out.println(place_name);
-//                    model = new FavModel(fvt.getPosition().latitude, fvt.getPosition().longitude, place_name);
-//
-//
-//
-//                } catch (IOException e) {
-//
-//
-//                    Log.i("DEBUG", "there is some problem: ");
-//                    e.printStackTrace();
-//                }
-//
+//                        Log.i("DEBUG", "onMapLongClick: " + place_name);
+//                        System.out.println(place_name);
+//                        model = new FavModel(fvt.getPosition().latitude, fvt.getPosition().longitude, place_name);
+
+
+                } catch (IOException e) {
+
+                    System.out.println("catch is working");
+                    Log.i("DEBUG", "there is some problem: ");
+                    //e.printStackTrace();
+                    place_name = "Address";
+
+                }
+
             }
         });
 
     }
 
 
-
-
     public void addToFvt(View view) {
-        if ( fvt == null){
+
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dformat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+        String sdate = dformat.format(calendar.getTime());
+
+        if (fvt == null) {
             Toast.makeText(this, "Select location", Toast.LENGTH_SHORT).show();
 
         } else {
 
-            model = new FavModel(fvt.getPosition().latitude, fvt.getPosition().longitude, "Address");
+
+            model = new FavModel(fvt.getPosition().latitude, fvt.getPosition().longitude, place_name, sdate,"Not Visited",1);
 
             FavModel.FavLoc.add(model);
+
+//            if (mDatabase.addlocation(fvt.getPosition().latitude, fvt.getPosition().longitude, place_name, sdate, "Not visited")) {
+//                Toast.makeText(this, "add", Toast.LENGTH_SHORT).show();
+//            } else {
+//                Toast.makeText(this, "location not added", Toast.LENGTH_SHORT).show();
+//            }
             Toast.makeText(this, "Added to fvt", Toast.LENGTH_SHORT).show();
         }
+
+
     }
 }
 
