@@ -51,7 +51,7 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
 
     GoogleMap mMap;
     public int i;
-    private static String visited =  "notvisited";
+    public String isVisited = "NotVisited";
 
 
 
@@ -84,6 +84,7 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fav_location);
+        mDatabase = new DatabaseHelper(this);
 
     CheckBox checkBox = findViewById(R.id.checkbox_visited);
 
@@ -91,23 +92,44 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-            visited =  "Visited";
+            isVisited =  "Visited";
+
+
 
             Double  dest_lat = FavModel.FavLoc.get(i).getLatitude();
             Double  dest_long = FavModel.FavLoc.get(i).getLongitude();
-            Location location = new Location("");
-            location.setLatitude(dest_lat);
-            location.setLongitude(dest_long);
+            String date = FavModel.FavLoc.get(i).getDate();
 
-            Calendar calendar = Calendar.getInstance();
-            SimpleDateFormat dformat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
-            String sdate = dformat.format(calendar.getTime());
-            FavModel loc = new FavModel(dest_lat,dest_long,place_name,sdate,visited,1);
-            FavModel.FavLoc.remove(i);
-            FavModel.FavLoc.add(i,loc);
+//            Location location = new Location("");
+//            location.setLatitude(dest_lat);
+//            location.setLongitude(dest_long);
+//
+//            Calendar calendar = Calendar.getInstance();
+//            SimpleDateFormat dformat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+//            String sdate = dformat.format(calendar.getTime());
 
 
-         visited = "NotVisited";
+//            FavModel loc = new FavModel(dest_lat,dest_long,place_name,sdate,isVisited,1);
+//            FavModel.FavLoc.remove(i);
+//            FavModel.FavLoc.add(i,loc);
+//            String isVisited = "Visited";
+//
+//            Log.i("tag", "onCheckedChanged: " + i);
+//            if(FavModel.FavLoc.get(i).getVisited().equals("Visited")){
+//                isVisited = "NotVisited";
+//            } else if(FavModel.FavLoc.get(i).getVisited().equals("NotVisited")){
+//                isVisited = "Visited";
+//            }
+
+//            mDatabase.updateLoaction()
+
+            mDatabase.updateLoaction(i,dest_lat,dest_long,place_name,date,"Visited");
+//                Toast.makeText(FavLocationActivity.this, "employee update", Toast.LENGTH_SHORT).show();
+                loadLocation();
+//            }
+
+
+//         isVisited = "NotVisited";
 
         }
     });
@@ -204,7 +226,7 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
                        dirc_lat = dest_lat;
                        direc_long = dest_long;
 
-                MarkerOptions options = new MarkerOptions().position(latLng).title("your Favorite").snippet("you are going here").draggable(true)
+                MarkerOptions options = new MarkerOptions().position(latLng).title(place_name).snippet("you are going here").draggable(true)
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 //                Log.i("tag", "setMarker: added " + userLatLng.latitude + "..." +userLatLng.longitude);
 
@@ -250,8 +272,8 @@ public class FavLocationActivity extends AppCompatActivity implements OnMapReady
                 try {
 
                     List<Address> addresses = geocoder.getFromLocation(fav_lat,fav_long,1);
-if(addresses != null && addresses.size() >0) {
-    if (addresses.get(0).getSubThoroughfare() != null) {
+  if(addresses != null && addresses.size() >0) {
+     if (addresses.get(0).getSubThoroughfare() != null) {
         place_name += addresses.get(0).getSubThoroughfare() + "";
     }
     if (addresses.get(0).getThoroughfare() != null) {
@@ -273,6 +295,7 @@ if(addresses != null && addresses.size() >0) {
 
         Intent intent = getIntent();
         i = intent.getExtras().getInt("id");
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         System.out.println("intent passesd");
 
         System.out.println(i);
@@ -300,13 +323,16 @@ if(addresses != null && addresses.size() >0) {
         String sdate = dformat.format(calendar.getTime());
 
 
-        model = new FavModel(fav_lat, fav_long,"Address",sdate,visited,1);
+        if (place_name == null){
+            place_name = "Address";
+        }
+//        model = new FavModel(1,fav_lat,fav_long,place_name,sdate,isVisited);
 
-//        if (mDatabase.addlocation(fav_lat, fav_long, place_name, sdate,  "Not visited")) {
-//            Toast.makeText(this, "add", Toast.LENGTH_SHORT).show();
-//        } else {
-//            Toast.makeText(this, "Employee not added", Toast.LENGTH_SHORT).show();
-//        }
+        if (mDatabase.addlocation(fav_lat, fav_long, place_name, sdate,  isVisited)) {
+            Toast.makeText(this, "add", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Employee not added", Toast.LENGTH_SHORT).show();
+        }
 
 
         FavModel.FavLoc.add(model);
@@ -458,42 +484,38 @@ if(addresses != null && addresses.size() >0) {
                 if (addresses.get(0).getLocality() != null) {
                     place_name += addresses.get(0).getLocality() + "";
                 }
-                model = new FavModel(fav_lat,fav_long,place_name,sdate,visited,1);
+//                model = new FavModel(fav_lat,fav_long,place_name,sdate,isVisited,1);
             }
 
 
         } catch (IOException e) {
             e.printStackTrace();
+            place_name = "address";
         }
-//        if(mDatabase.updateEmployee(employee.getId(),name,dept,Double.parseDouble(salary))){
-//            Toast.makeText(mContext, "employee update", Toast.LENGTH_SHORT).show();
-//            loadEmployee();
-//        }
-//        else {
-//            Toast.makeText(mContext, "employee update", Toast.LENGTH_SHORT).show();
-//        }
 
-//        if(mDatabase.updateLoaction(FavModel.FavLoc.get(i).getId(),dest_lat,dest_long,place_name,sdate,visited)){
-//            Toast.makeText(FavLocationActivity.this, "employee update", Toast.LENGTH_SHORT).show();
-//            loadEmployee();
-//        }
-        FavModel loc = new FavModel(dest_lat,dest_long,place_name,sdate,visited,1);
-        FavModel.FavLoc.remove(i);
-        FavModel.FavLoc.add(i,loc);
+
+        if(mDatabase.updateLoaction(FavModel.FavLoc.get(i).getId(),dest_lat,dest_long,place_name,sdate,isVisited)){
+            Toast.makeText(FavLocationActivity.this, "location update", Toast.LENGTH_SHORT).show();
+            loadLocation();
+        }
+//        FavModel loc = new FavModel(dest_lat,dest_long,place_name,sdate,visited,1);
+//        FavModel.FavLoc.remove(i);
+//        FavModel.FavLoc.add(i,loc);
 
     }
 
-//    private  void loadEmployee() {
-//        Cursor cursor = mDatabase.getAllLocation();
-//        if(cursor.moveToFirst()) {
-//            FavModel.FavLoc.clear();
-//        }
-//            do{
-//                FavModel.FavLoc.add(new FavModel(cursor.getDouble(0),cursor.getDouble(1),cursor.getString(2),cursor.getString(3),
-//                        cursor.getString(4),cursor.getInt(5)));
-//
-//            } while(cursor.moveToNext());
-//            cursor.close();
-//    }
+    private  void loadLocation() {
+        Cursor cursor = mDatabase.getAllLocation();
+        if(cursor.moveToFirst()) {
+            FavModel.FavLoc.clear();
+        }
+            do{
+                FavModel.FavLoc.add(new FavModel(cursor.getInt(0),cursor.getDouble(1),cursor.getDouble(2),cursor.getString(3),
+                        cursor.getString(4),cursor.getString(5)));
+
+                Log.i("tag", "loadLocation: " + cursor.getInt(0));
+            } while(cursor.moveToNext());
+            cursor.close();
+    }
 
 }

@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         listView = findViewById(R.id.listview);
 
 
+        mDatabase = new DatabaseHelper(this);
         Add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -88,9 +89,16 @@ public class MainActivity extends AppCompatActivity {
                     case 1:
                         System.out.println("delete");
 
-                        FavModel.FavLoc.remove(position);
+//                        FavModel.FavLoc.remove(position);
 //                        if(mDatabase.deleteLocation(arrayList.get(position).getId()))
-//                            loadLoactions();
+                         boolean b = mDatabase.deleteLocation(FavModel.FavLoc.get(position).getId());
+
+                         if(b) {
+                             loadLoactions();
+                             System.out.println("edit");
+                         } else
+                             System.out.println("not ");
+
 
                         fvtLocations = new String[FavModel.FavLoc.size()];
 
@@ -145,8 +153,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        loadLoactions();
+//        adapter.notifyDataSetChanged();
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
+
+        loadLoactions();
 //        LocationAdapter locationAdapter = new LocationAdapter(this,R.layout.list_layout, FavModel.FavLoc);
 //        listView.setAdapter(locationAdapter);
 
@@ -160,6 +177,12 @@ public class MainActivity extends AppCompatActivity {
 
             if (FavModel.FavLoc.get(i).getAddress() != null) {
                 System.out.println("if part executed");
+
+                System.out.println(FavModel.FavLoc.get(i).getAddress());
+                System.out.println(FavModel.FavLoc.get(i).getLatitude());
+                System.out.println(FavModel.FavLoc.get(i).getLongitude());
+                System.out.println(FavModel.FavLoc.get(i).getVisited());
+
                 fvtLocations[i] = FavModel.FavLoc.get(i).getAddress() + (i + 1) +   "\n" + FavModel.FavLoc.get(i).getVisited();
 
             } else {
@@ -179,19 +202,21 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-//    private void loadLoactions() {
-//        Cursor cursor = mDatabase.getAllLocation();
-//        if(cursor.moveToFirst()) {
-//            do{
-//               FavModel.FavLoc.add(new FavModel(cursor.getDouble(0),cursor.getDouble(1),cursor.getString(2),cursor.getString(3),
-//                       cursor.getString(4),cursor.getInt(5)));
-//
-//            } while(cursor.moveToNext());
-//            cursor.close();
-//
-//            adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_expandable_list_item_1,fvtLocations);
-//            listView.setAdapter(adapter);
-//        }
-//    }
+    private void loadLoactions() {
+        Cursor cursor = mDatabase.getAllLocation();
+        FavModel.FavLoc.clear();
+        if(cursor.moveToFirst()) {
+            do{
+               FavModel.FavLoc.add(new FavModel(cursor.getInt(0),cursor.getDouble(1),cursor.getDouble(2),cursor.getString(3),
+                       cursor.getString(4),cursor.getString(5)));
+                Log.i("tag", "loadLocation: " + cursor.getInt(0));
+
+            } while(cursor.moveToNext());
+            cursor.close();
+
+            //adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_expandable_list_item_1,fvtLocations);
+            //listView.setAdapter(adapter);
+        }
+    }
 
 }

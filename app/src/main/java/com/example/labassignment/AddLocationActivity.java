@@ -52,7 +52,7 @@ public class AddLocationActivity extends AppCompatActivity implements OnMapReady
     Marker fvt;
     String place_name;
     FavModel model;
-   public String isVisited = "visited";
+   public String isVisited = "NotVisited";
     DatabaseHelper mDatabase;
 
 
@@ -221,6 +221,9 @@ public class AddLocationActivity extends AppCompatActivity implements OnMapReady
 
                     System.out.println("try is working");
                     place_name = addresses.get(0).getAddressLine(0);
+
+
+
                     System.out.println(addresses.get(0).getAddressLine(0));
 //                    if(addresses != null && addresses.size() >0) {
 //                        if (addresses.get(0).getSubThoroughfare() != null) {
@@ -247,7 +250,7 @@ public class AddLocationActivity extends AppCompatActivity implements OnMapReady
                     System.out.println("catch is working");
                     Log.i("DEBUG", "there is some problem: ");
                     //e.printStackTrace();
-                    place_name = "Address";
+
 
                 }
 
@@ -268,17 +271,19 @@ public class AddLocationActivity extends AppCompatActivity implements OnMapReady
 
         } else {
 
+//        model = new FavModel(fvt.getPosition().latitude, fvt.getPosition().longitude, place_name, sdate,"Not Visited",1);
+//
+//            FavModel.FavLoc.add(model);
 
-            model = new FavModel(fvt.getPosition().latitude, fvt.getPosition().longitude, place_name, sdate,"Not Visited",1);
-
-            FavModel.FavLoc.add(model);
-
-//            if (mDatabase.addlocation(fvt.getPosition().latitude, fvt.getPosition().longitude, place_name, sdate, "Not visited")) {
-//                Toast.makeText(this, "add", Toast.LENGTH_SHORT).show();
-//            } else {
-//                Toast.makeText(this, "location not added", Toast.LENGTH_SHORT).show();
-//            }
-            Toast.makeText(this, "Added to fvt", Toast.LENGTH_SHORT).show();
+            if (place_name == null){
+                place_name = "Address";
+            }
+            if (mDatabase.addlocation(fvt.getPosition().latitude, fvt.getPosition().longitude, place_name, sdate, "Not visited")) {
+                Toast.makeText(this, "add", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "location not added", Toast.LENGTH_SHORT).show();
+            }
+//            Toast.makeText(this, "Added to fvt", Toast.LENGTH_SHORT).show();
         }
 
 

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -28,13 +29,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
        String sql = "create table " + TABLE_NAME + "(" +
-               COLUMN_ID + " Integer not null constraint employee_pk primary key autoincrement," +
+               COLUMN_ID + " Integer not null constraint loaction_pk primary key autoincrement," +
                COLUMN_LAT + " double not null, " +
                COLUMN_LONG + " double not null, " +
-               COLUMN_ADDRESS + " varchar(200) not null, " +
-
-               COLUMN_VISITED + " varchar(200) not null, " +
-               COLUMN_DATE + " varchar(200) not null);";
+               COLUMN_ADDRESS + " varchar(200), " +
+               COLUMN_DATE + " varchar(200) not null, " +
+               COLUMN_VISITED + " varchar(200) not null);";
        db.execSQL(sql);
     }
 
@@ -53,7 +53,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put(COLUMN_LONG, String.valueOf(lng));
         cv.put(COLUMN_ADDRESS, address);
         cv.put(COLUMN_DATE, date);
-
         cv.put(COLUMN_VISITED, visited);
         return  sqLiteDatabase.insert(TABLE_NAME,null, cv) != -1;
 
@@ -72,9 +71,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put(COLUMN_LONG, String.valueOf(lng));
         cv.put(COLUMN_ADDRESS, address);
         cv.put(COLUMN_DATE, date);
-
         cv.put(COLUMN_VISITED, visited);
 
+        Log.e("updateLoaction", visited);
         return  sqLiteDatabase.update(TABLE_NAME, cv,COLUMN_ID + "=?", new String[]{String.valueOf(id)}) > 0;
     }
     boolean deleteLocation(int id) {
